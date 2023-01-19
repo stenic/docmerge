@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.3](https://github.com/stenic/docmerge/compare/v1.0.2...v1.0.3) (2023-01-19)
+
+
+### Bug Fixes
+
+* Fix release ([f21d152](https://github.com/stenic/docmerge/commit/f21d1527638fb5c0dd094b198dc0be5ef5a20831))
+
 ## [1.0.2](https://github.com/stenic/docmerge/compare/v1.0.1...v1.0.2) (2023-01-19)
 
 
