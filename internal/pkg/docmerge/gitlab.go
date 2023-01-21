@@ -7,6 +7,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/xanzy/go-gitlab"
+	"golang.org/x/exp/slices"
 )
 
 func (d DocMerge) runGitlab(owner string) error {
@@ -15,52 +16,44 @@ func (d DocMerge) runGitlab(owner string) error {
 		log.Fatal(err)
 	}
 
-	// List all projects
-	logrus.Infof("Fetching project for %s", owner)
 	gl := Gitlab{
 		client: glClient,
+		log:    logrus.NewEntry(logrus.New()),
 	}
-	// projects, err := gl.getProjects(owner)
-	// if err != nil {
-	// 	logrus.Fatal(err)
-	// }
+
+	logrus.Infof("Fetching project for %s", owner)
 	for project := range gl.getProjects(owner) {
-		logrus.Info(project.NameWithNamespace)
-		files, err := gl.getFiles(project.PathWithNamespace, "docs")
+		if d.cfg.GitlabTopicFilter != "" && !slices.Contains(project.Topics, d.cfg.GitlabTopicFilter) {
+			gl.log.Debugf("Skipping: does not have label '%s'", d.cfg.GitlabTopicFilter)
+			continue
+		}
+
+		gl.log.Infof("Fetching %s", project.PathWithNamespace)
+		files, err := gl.getFiles(project.PathWithNamespace, d.cfg.DocsDir)
 		if err != nil {
-			logrus.Error(err)
+			gl.log.Error(err)
 			continue
 		}
 		targetDir := path.Join(d.cfg.OutputDir, project.PathWithNamespace)
-		os.RemoveAll(targetDir)
+		if err := os.RemoveAll(targetDir); err != nil {
+			gl.log.Error(err)
+		}
 
 		for _, file := range files {
-
-			b, _, err := glClient.RepositoryFiles.GetRawFile(project.PathWithNamespace, file, &gitlab.GetRawFileOptions{})
-			if err != nil {
-				logrus.Error(err)
-				continue
+			localPath := path.Join(targetDir, file[len(d.cfg.DocsDir):])
+			if err := gl.downloadFile(*project, file, localPath); err != nil {
+				gl.log.Error(err)
 			}
-			localPath := path.Join(targetDir, file[4:])
-			if err := os.MkdirAll(path.Dir(localPath), 0755); err != nil {
-				return err
-			}
-			f, err := os.Create(localPath)
-			if err != nil {
-				logrus.Error(err)
-				continue
-			}
-			f.Write(b)
-			f.Sync()
-			f.Close()
 		}
 	}
+	logrus.Infof("Completed project for %s", owner)
 
 	return nil
 }
 
 type Gitlab struct {
 	client *gitlab.Client
+	log    *logrus.Entry
 }
 
 func (g Gitlab) getProjects(owner string) chan *gitlab.Project {
@@ -73,10 +66,10 @@ func (g Gitlab) getProjects(owner string) chan *gitlab.Project {
 
 	go func() {
 		for {
-			logrus.Debug("Fetching more repostories")
+			g.log.Debug("Fetching more repostories")
 			projects, resp, err := g.client.Groups.ListGroupProjects(owner, opts)
 			if err != nil {
-				logrus.Error(err)
+				g.log.Error(err)
 			}
 
 			for _, project := range projects {
@@ -125,4 +118,21 @@ func (g Gitlab) getFiles(pid interface{}, prefix string) ([]string, error) {
 	}
 
 	return allFiles, nil
+}
+
+func (g Gitlab) downloadFile(project gitlab.Project, file, localPath string) error {
+	b, _, err := g.client.RepositoryFiles.GetRawFile(project.PathWithNamespace, file, &gitlab.GetRawFileOptions{})
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(path.Dir(localPath), 0755); err != nil {
+		return err
+	}
+	f, err := os.Create(localPath)
+	if err != nil {
+		return err
+	}
+	f.Write(b)
+	f.Sync()
+	return f.Close()
 }

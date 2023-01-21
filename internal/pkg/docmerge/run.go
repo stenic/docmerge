@@ -15,6 +15,7 @@ type DocMerge struct {
 func (d DocMerge) Run(cfg DMConfig) error {
 	d.ctx = context.Background()
 	d.cfg = cfg
+	d.cfg.DocsDir = "docs"
 
 	logrus.SetLevel(logrus.DebugLevel)
 

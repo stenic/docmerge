@@ -43,7 +43,7 @@ func (d DocMerge) runGithub(owner string) error {
 	for _, repo := range repos {
 		gh.log = logrus.WithField("repo", repo.GetName())
 		if d.cfg.GithubTopicFilter != "" && !slices.Contains(repo.Topics, d.cfg.GithubTopicFilter) {
-			gh.log.Debug("Skipping: does not have label 'internal-docs'")
+			gh.log.Debugf("Skipping: does not have label '%s'", d.cfg.GithubTopicFilter)
 			continue
 		}
 
