@@ -16,6 +16,8 @@ func (d DocMerge) Run(cfg DMConfig) error {
 	d.ctx = context.Background()
 	d.cfg = cfg
 
+	logrus.SetLevel(logrus.DebugLevel)
+
 	if cfg.GithubOwner != "" {
 		if cfg.GithubToken == "" {
 			return fmt.Errorf("github-owner and github-token are required")

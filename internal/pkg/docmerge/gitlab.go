@@ -20,11 +20,11 @@ func (d DocMerge) runGitlab(owner string) error {
 	gl := Gitlab{
 		client: glClient,
 	}
-	projects, err := gl.getProjects(owner)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	for _, project := range projects {
+	// projects, err := gl.getProjects(owner)
+	// if err != nil {
+	// 	logrus.Fatal(err)
+	// }
+	for project := range gl.getProjects(owner) {
 		logrus.Info(project.NameWithNamespace)
 		files, err := gl.getFiles(project.PathWithNamespace, "docs")
 		if err != nil {
@@ -35,6 +35,7 @@ func (d DocMerge) runGitlab(owner string) error {
 		os.RemoveAll(targetDir)
 
 		for _, file := range files {
+
 			b, _, err := glClient.RepositoryFiles.GetRawFile(project.PathWithNamespace, file, &gitlab.GetRawFileOptions{})
 			if err != nil {
 				logrus.Error(err)
@@ -62,31 +63,38 @@ type Gitlab struct {
 	client *gitlab.Client
 }
 
-func (g Gitlab) getProjects(owner string) ([]*gitlab.Project, error) {
-	var allProjects []*gitlab.Project
+func (g Gitlab) getProjects(owner string) chan *gitlab.Project {
+	ch := make(chan *gitlab.Project)
 
 	opts := &gitlab.ListGroupProjectsOptions{
 		Simple:           gitlab.Bool(true),
 		IncludeSubGroups: gitlab.Bool(true),
 	}
-	for {
-		projects, resp, err := g.client.Groups.ListGroupProjects(owner, opts)
-		if err != nil {
-			return allProjects, err
+
+	go func() {
+		for {
+			logrus.Debug("Fetching more repostories")
+			projects, resp, err := g.client.Groups.ListGroupProjects(owner, opts)
+			if err != nil {
+				logrus.Error(err)
+			}
+
+			for _, project := range projects {
+				ch <- project
+			}
+
+			// Exit the loop when we've seen all pages.
+			if resp.NextPage == 0 {
+				close(ch)
+				return
+			}
+
+			// Update the page number to get the next page.
+			opts.Page = resp.NextPage
 		}
+	}()
 
-		allProjects = append(allProjects, projects...)
-
-		// Exit the loop when we've seen all pages.
-		if resp.NextPage == 0 {
-			break
-		}
-
-		// Update the page number to get the next page.
-		opts.Page = resp.NextPage
-	}
-
-	return allProjects, nil
+	return ch
 }
 
 func (g Gitlab) getFiles(pid interface{}, prefix string) ([]string, error) {
