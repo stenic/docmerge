@@ -3,13 +3,58 @@ package docmerge
 import (
 	"context"
 	"io"
+	"net/http"
 	"os"
 	"path"
 	"regexp"
 
 	"github.com/google/go-github/v49/github"
+	"github.com/gregjones/httpcache"
+	"github.com/gregjones/httpcache/diskcache"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
+	"golang.org/x/oauth2"
 )
+
+func (d DocMerge) runGithub(owner string) error {
+	tempDir := "/tmp/docmerge-cache"
+	tc := &http.Client{
+		Transport: &oauth2.Transport{
+			Base: httpcache.NewTransport(diskcache.New(tempDir)),
+			Source: oauth2.StaticTokenSource(
+				&oauth2.Token{AccessToken: d.cfg.GithubToken},
+			),
+		},
+	}
+
+	client := github.NewClient(tc)
+	gh := Github{
+		client:  client,
+		context: d.ctx,
+		owner:   owner,
+		log:     logrus.NewEntry(logrus.New()),
+	}
+
+	repos, err := gh.getAllRepos(nil)
+	if err != nil {
+		return err
+	}
+
+	for _, repo := range repos {
+		gh.log = logrus.WithField("repo", repo.GetName())
+		if d.cfg.GithubTopicFilter != "" && !slices.Contains(repo.Topics, d.cfg.GithubTopicFilter) {
+			gh.log.Debug("Skipping: does not have label 'internal-docs'")
+			continue
+		}
+
+		gh.log.Infof("Fetching %s", repo.GetName())
+		if err := gh.downloadDocs(repo, path.Join(d.cfg.OutputDir, *repo.Name)); err != nil {
+			gh.log.Error(err)
+		}
+	}
+
+	return nil
+}
 
 type Github struct {
 	client  *github.Client

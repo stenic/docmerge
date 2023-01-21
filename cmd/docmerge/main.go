@@ -16,7 +16,8 @@ var (
 var rootCommand = &cobra.Command{
 	Use: "mergedocs",
 	Run: func(c *cobra.Command, args []string) {
-		if err := docmerge.Run(cfg); err != nil {
+		dm := docmerge.DocMerge{}
+		if err := dm.Run(cfg); err != nil {
 			logrus.Error(err)
 		}
 	},
@@ -24,9 +25,14 @@ var rootCommand = &cobra.Command{
 
 func init() {
 	rootCommand.Flags().StringVar(&cfg.OutputDir, "output-dir", "./output", "Directory to output all docs")
+
 	rootCommand.Flags().StringVar(&cfg.GithubOwner, "github-owner", "", "Github owner")
 	rootCommand.Flags().StringVar(&cfg.GithubToken, "github-token", os.Getenv("DM_GITHUB_TOKEN"), "Github token, please use env DM_GITHUB_TOKEN")
 	rootCommand.Flags().StringVar(&cfg.GithubTopicFilter, "github-topic-filter", "", "Github topic filter")
+
+	rootCommand.Flags().StringVar(&cfg.GitlabOwner, "gitlab-owner", "", "Gitlab owner")
+	rootCommand.Flags().StringVar(&cfg.GitlabToken, "gitlab-token", os.Getenv("DM_GITLAB_TOKEN"), "Gitlab token, please use env DM_GITLAB_TOKEN")
+
 }
 
 func main() {
