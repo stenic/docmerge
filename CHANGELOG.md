@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0](https://github.com/stenic/docmerge/compare/v1.0.3...v1.1.0) (2023-01-21)
+
+
+### Bug Fixes
+
+* Use generator pattern to speed up initial wait time ([c3c054b](https://github.com/stenic/docmerge/commit/c3c054b1f252a3916222d10df7dd54f1615579df))
+
+
+### Features
+
+* **gitlab:** Topic filter ([9431476](https://github.com/stenic/docmerge/commit/9431476e7f0b31e90769563d93c4278392d85c51))
+* Implement gitlab ([9d2a1c8](https://github.com/stenic/docmerge/commit/9d2a1c85bb729709f016fbce81b264854e4d1f47))
+
 ## [1.0.3](https://github.com/stenic/docmerge/compare/v1.0.2...v1.0.3) (2023-01-19)
 
 
