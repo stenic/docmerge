@@ -4,11 +4,8 @@ type DMConfig struct {
 	OutputDir string
 	DocsDir   string
 
-	GithubToken       string
-	GithubOwner       string
-	GithubTopicFilter string
-
-	GitlabToken       string
-	GitlabOwner       string
-	GitlabTopicFilter string
+	Endpoint    string
+	Token       string
+	Owner       string
+	TopicFilter string
 }

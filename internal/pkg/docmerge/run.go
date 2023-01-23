@@ -2,7 +2,13 @@ package docmerge
 
 import (
 	"context"
+	"docmerge/internal/pkg/docmerge/adapter"
+	"docmerge/internal/pkg/docmerge/github"
+	"docmerge/internal/pkg/docmerge/gitlab"
 	"fmt"
+	"os"
+	"path"
+	"regexp"
 
 	"github.com/sirupsen/logrus"
 )
@@ -12,34 +18,43 @@ type DocMerge struct {
 	ctx context.Context
 }
 
-func (d DocMerge) Run(cfg DMConfig) error {
+func (d DocMerge) Run(cfg DMConfig, endpoint string) error {
 	d.ctx = context.Background()
 	d.cfg = cfg
 	d.cfg.DocsDir = "docs"
 
 	logrus.SetLevel(logrus.DebugLevel)
 
-	if cfg.GithubOwner != "" {
-		if cfg.GithubToken == "" {
-			return fmt.Errorf("github-owner and github-token are required")
-		}
-
-		logrus.Infof("Processing github %s", cfg.GithubOwner)
-		if err := d.runGithub(cfg.GithubOwner); err != nil {
-			logrus.Error(err)
-		}
+	var a adapter.Adapter
+	switch endpoint {
+	case "github":
+		a = github.New(cfg.Token)
+	case "gitlab":
+		a = gitlab.New(cfg.Token)
+	default:
+		logrus.Fatal("Endpoint not supported")
 	}
 
-	if cfg.GitlabOwner != "" {
-		if cfg.GitlabToken == "" {
-			return fmt.Errorf("gitlab-owner and gitlab-token are required")
-		}
-
-		logrus.Infof("Processing gitlab %s", cfg.GitlabOwner)
-		if err := d.runGitlab(cfg.GitlabOwner); err != nil {
-			logrus.Error(err)
+	re := regexp.MustCompile(fmt.Sprintf(`^%s\/`, d.cfg.DocsDir))
+	for repo := range a.GetRepositories(cfg.Owner) {
+		log := logrus.WithField("repo", repo)
+		log.Infof("Fetching %s", repo)
+		targetDir := path.Join(d.cfg.OutputDir, repo)
+		os.RemoveAll(targetDir)
+		for file := range a.GetFiles(cfg.Owner, repo) {
+			if !re.MatchString(file) {
+				log.Tracef("Skipping %s", file)
+				continue
+			}
+			log.Debugf("Downloading %s", file)
+			localPath := path.Join(targetDir, file[len(d.cfg.DocsDir):])
+			if err := os.MkdirAll(path.Dir(localPath), 0755); err != nil {
+				return err
+			}
+			if err := a.DownloadFile(cfg.Owner, repo, file, localPath); err != nil {
+				logrus.Error(err)
+			}
 		}
 	}
-
 	return nil
 }

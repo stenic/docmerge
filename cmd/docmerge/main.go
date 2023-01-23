@@ -14,10 +14,11 @@ var (
 )
 
 var rootCommand = &cobra.Command{
-	Use: "mergedocs",
+	Use:         "mergedocs endpoint",
+	Args: cobra.ExactArgs(1),
 	Run: func(c *cobra.Command, args []string) {
 		dm := docmerge.DocMerge{}
-		if err := dm.Run(cfg); err != nil {
+		if err := dm.Run(cfg, args[0]); err != nil {
 			logrus.Error(err)
 		}
 	},
@@ -26,14 +27,9 @@ var rootCommand = &cobra.Command{
 func init() {
 	rootCommand.Flags().StringVar(&cfg.OutputDir, "output-dir", "./output", "Directory to output all docs")
 
-	rootCommand.Flags().StringVar(&cfg.GithubOwner, "github-owner", "", "Github owner")
-	rootCommand.Flags().StringVar(&cfg.GithubToken, "github-token", os.Getenv("DM_GITHUB_TOKEN"), "Github token, please use env DM_GITHUB_TOKEN")
-	rootCommand.Flags().StringVar(&cfg.GithubTopicFilter, "github-topic-filter", "", "Github topic filter")
-	
-	rootCommand.Flags().StringVar(&cfg.GitlabOwner, "gitlab-owner", "", "Gitlab owner")
-	rootCommand.Flags().StringVar(&cfg.GitlabToken, "gitlab-token", os.Getenv("DM_GITLAB_TOKEN"), "Gitlab token, please use env DM_GITLAB_TOKEN")
-	rootCommand.Flags().StringVar(&cfg.GitlabTopicFilter, "gitlab-topic-filter", "", "Gitlab topic filter")
-
+	rootCommand.Flags().StringVar(&cfg.Owner, "owner", "", "Owner")
+	rootCommand.Flags().StringVar(&cfg.Token, "token", os.Getenv("DM_TOKEN"), "Token, please use env DM_TOKEN")
+	rootCommand.Flags().StringVar(&cfg.TopicFilter, "topic-filter", "", "Topic filter")
 }
 
 func main() {
