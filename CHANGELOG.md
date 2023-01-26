@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/stenic/docmerge/compare/v1.1.0...v1.2.0) (2023-01-26)
+
+
+### Features
+
+* Add bitbucket ([d33eed9](https://github.com/stenic/docmerge/commit/d33eed920a8932dc38b317a537eb44b05fde0f0d))
+
 # [1.1.0](https://github.com/stenic/docmerge/compare/v1.0.3...v1.1.0) (2023-01-21)
 
 
