@@ -3,6 +3,7 @@ package docmerge
 import (
 	"context"
 	"docmerge/internal/pkg/docmerge/adapter"
+	"docmerge/internal/pkg/docmerge/bitbucket"
 	"docmerge/internal/pkg/docmerge/github"
 	"docmerge/internal/pkg/docmerge/gitlab"
 	"fmt"
@@ -31,6 +32,8 @@ func (d DocMerge) Run(cfg DMConfig, endpoint string) error {
 		a = github.New(cfg.Token)
 	case "gitlab":
 		a = gitlab.New(cfg.Token)
+	case "bitbucket":
+		a = bitbucket.New(cfg.Token)
 	default:
 		logrus.Fatal("Endpoint not supported")
 	}

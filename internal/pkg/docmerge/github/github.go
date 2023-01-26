@@ -52,7 +52,6 @@ func (a github) GetRepositories(owner string) chan string {
 				continue
 			}
 			for _, repo := range repos {
-
 				ch <- *repo.Name
 			}
 			if resp.NextPage == 0 {

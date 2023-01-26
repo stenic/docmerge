@@ -4,7 +4,6 @@ import (
 	"context"
 	"docmerge/internal/pkg/docmerge/adapter"
 	"os"
-	"path"
 
 	"github.com/sirupsen/logrus"
 	glapi "github.com/xanzy/go-gitlab"
@@ -96,9 +95,6 @@ func (a gitlab) GetFiles(owner, repo string) chan string {
 func (a gitlab) DownloadFile(owner, repo, file, localPath string) error {
 	b, _, err := a.client.RepositoryFiles.GetRawFile(repo, file, &glapi.GetRawFileOptions{})
 	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(path.Dir(localPath), 0755); err != nil {
 		return err
 	}
 	f, err := os.Create(localPath)
