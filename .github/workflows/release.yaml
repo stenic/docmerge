@@ -24,7 +24,7 @@ jobs:
       - run: |
           go vet ./...
           go test ./...
-    
+
   version:
     name: Semantic versioning
     needs: build
@@ -46,7 +46,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-code-dependencies
       - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v3
+        uses: cycjimmy/semantic-release-action@v4
         id: semantic
         with:
           extra_plugins: |
