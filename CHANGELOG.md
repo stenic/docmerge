@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/stenic/docmerge/compare/v1.2.0...v1.2.1) (2024-09-27)
+
+
+### Bug Fixes
+
+* Ignore any archived github repos ([02fc98b](https://github.com/stenic/docmerge/commit/02fc98bec791467a02e55ecd3e533411515efb11))
+
 # [1.2.0](https://github.com/stenic/docmerge/compare/v1.1.0...v1.2.0) (2023-01-26)
 
 
