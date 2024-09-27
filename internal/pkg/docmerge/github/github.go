@@ -52,6 +52,9 @@ func (a github) GetRepositories(owner string) chan string {
 				continue
 			}
 			for _, repo := range repos {
+				if repo.Archived != nil && *repo.Archived {
+					continue
+				}
 				ch <- *repo.Name
 			}
 			if resp.NextPage == 0 {
