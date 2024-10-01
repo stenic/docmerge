@@ -1,5 +1,10 @@
 # DocMerge
 
+[![Releases](https://img.shields.io/github/v/release/stenic/docmerge?style=for-the-badge)](https://github.com/stenic/docmerge/releases)
+[![Build status](https://img.shields.io/github/actions/workflow/status/stenic/docmerge/release.yaml?style=for-the-badge)](https://github.com/stenic/docmerge/actions/workflows/ci.yml)
+[![GitHub License](https://img.shields.io/github/license/stenic/docmerge?style=for-the-badge)](https://github.com/stenic/docmerge/blob/main/LICENSE)
+[![Powered by Stenic](https://img.shields.io/badge/powered--by-stenic.io-blue?style=for-the-badge&logoColor=blue)](https://stenic.io)
+
 Crawl your repositories for `docs` folders and create a central documentation source.
 
 ## Installation
